@@ -230,55 +230,10 @@ public class CodeWriter {
 
         labelCount++;
     }
-
-    void writeLabel(String label) {
-        write("(" + label + ")");
-    }
-
     void writeGoto(String label) {
         write("@" + label);
         write("0;JMP");
     }
-
-    void writeIf(String label) {
-        write("@SP");
-        write("AM=M-1");
-        write("D=M");
-        write("M=0");
-        write("@" + label);
-        write("D;JNE");
-
-    }
-
-    void writeFunction(String funcName, int nLocals) {
-
-        var loopLabel = funcName + "_INIT_LOCALS_LOOP";
-        var loopEndLabel = funcName + "_INIT_LOCALS_END";
-
-
-        write("(" + funcName + ")" + "// initializa local variables");
-        write(String.format("@%d", nLocals));
-        write("D=A");
-        write("@R13"); // temp
-        write("M=D");
-        write("(" + loopLabel + ")");
-        write("@" + loopEndLabel);
-        write("D;JEQ");
-        write("@0");
-        write("D=A");
-        write("@SP");
-        write("A=M");
-        write("M=D");
-        write("@SP");
-        write("M=M+1");
-        write("@R13");
-        write("MD=M-1");
-        write("@" + loopLabel);
-        write("0;JMP");
-        write("(" + loopEndLabel + ")");
-
-    }
-
 
     void writeFramePush(String value) {
         write("@" + value);
@@ -292,18 +247,6 @@ public class CodeWriter {
 
 
     void writeCall(String funcName, int numArgs) {
-
-        /*
-           push return-address     // (using the label declared below)
-           push LCL                // save LCL of the calling function
-           push ARG                // save ARG of the calling function
-           push THIS               // save THIS of the calling function
-           push THAT               // save THAT of the calling function
-           ARG = SP-n-5            // reposition ARG (n = number of args)
-           LCL = SP                // reposiiton LCL
-           goto f                  // transfer control
-           (return-address)        // declare a label for the return-address
-        */
 
         var comment = String.format("// call %s %d", funcName, numArgs);
 
@@ -342,74 +285,6 @@ public class CodeWriter {
         write("(" + returnAddr + ")"); // (return-address)
 
     }
-
-    void writeReturn() {
-
-        /*
-           FRAME = LCL         // FRAME is a temporary var
-           RET = *(FRAME-5)    // put the return-address in a temporary var
-           *ARG = pop()        // reposition the return value for the caller
-           SP = ARG + 1        // restore SP of the caller
-           THAT = *(FRAME - 1) // restore THAT of the caller
-           THIS = *(FRAME - 2) // restore THIS of the caller
-           ARG = *(FRAME - 3)  // restore ARG of the caller
-           LCL = *(FRAME - 4)  // restore LCL of the caller
-           goto RET            // goto return-address (in the caller's code)
-        */
-
-        write("@LCL"); // FRAME = LCL
-        write("D=M");
-
-        write("@R13"); // R13 -> FRAME
-        write("M=D");
-
-        write("@5");// RET = *(FRAME-5)
-        write("A=D-A");
-        write("D=M");
-        write("@R14"); // R14 -> RET
-        write("M=D");
-
-        write("@SP");// *ARG = pop()
-        write("AM=M-1");
-        write("D=M");
-        write("@ARG");
-        write("A=M");
-        write("M=D");
-
-        write("D=A"); // SP = ARG+1
-        write("@SP");
-        write("M=D+1");
-
-        write("@R13"); // THAT = *(FRAME-1)
-        write("AM=M-1");
-        write("D=M");
-        write("@THAT");
-        write("M=D");
-
-        write("@R13");// THIS = *(FRAME-2)
-        write("AM=M-1");
-        write("D=M");
-        write("@THIS");
-        write("M=D");
-
-        write("@R13"); // ARG = *(FRAME-3)
-        write("AM=M-1");
-        write("D=M");
-        write("@ARG");
-        write("M=D");
-
-        write("@R13");// LCL = *(FRAME-4)
-        write("AM=M-1");
-        write("D=M");
-        write("@LCL");
-        write("M=D");
-
-        write("@R14"); // goto RET
-        write("A=M");
-        write("0;JMP");
-
-    }
-
     private void write(String s) {
         output.append(String.format("%s\n", s));
     }
