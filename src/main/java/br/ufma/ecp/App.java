@@ -92,8 +92,6 @@ public class App {
             System.out.println(outputFileName);
             CodeWriter code = new CodeWriter(outputFileName);
 
-            code.writeInit();
-
             for (File f : file.listFiles()) {
                 if (f.isFile() && f.getName().endsWith(".vm")) {
 
@@ -116,7 +114,6 @@ public class App {
                 var outputFileName = inputFileName.substring(0, pos) + ".asm";
                 CodeWriter code = new CodeWriter(outputFileName);
                 System.out.println("compiling " + inputFileName);
-                code.writeInit();
                 translateFile(file, code);
                 code.save();
             }

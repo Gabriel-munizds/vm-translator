@@ -39,16 +39,6 @@ public class CodeWriter {
 
         return moduleName + "." + index;
     }
-
-    public void writeInit() {
-        write("@256");
-        write("D=A");
-        write("@SP");
-        write("M=D");
-        writeCall("Sys.init", 0);
-    }
-
-
     void writePush(String seg, int index) {
         if (seg.equals("constant")) {
             write("@" + index + " // push " + seg + " " + index);
